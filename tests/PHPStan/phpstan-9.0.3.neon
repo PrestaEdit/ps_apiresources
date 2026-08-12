@@ -19,3 +19,9 @@ parameters:
             identifier: class.notFound
             count: 6
             path: ../../src/ApiPlatform/Resources/TaxRule/*
+        # BusinessEntity domain only exists on develop; gated via experimentalOperation.
+        -
+            message: "#Class .*BusinessEntity\\\\(Command|Exception).* not found.#"
+            identifier: class.notFound
+            count: 4
+            path: ../../src/ApiPlatform/Resources/BusinessEntity/BusinessEntity.php
