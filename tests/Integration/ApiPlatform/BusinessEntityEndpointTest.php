@@ -71,7 +71,7 @@ class BusinessEntityEndpointTest extends ApiTestCase
             'legalName' => 'Acme S.A.',
             'externalRef' => 'ACME-001',
             'deliveryAuthorized' => true,
-            'status' => 'ENABLED',
+            'status' => 'active',
             'shopId' => 1,
             'customerGroupId' => 3,
             'billingAddressAsShippingAddress' => true,
@@ -105,7 +105,7 @@ class BusinessEntityEndpointTest extends ApiTestCase
             [
                 // missing name, legalName, addresses...
                 'deliveryAuthorized' => true,
-                'status' => 'ENABLED',
+                'status' => 'active',
                 'shopId' => 1,
                 'customerGroupId' => 3,
                 'billingAddressAsShippingAddress' => true,

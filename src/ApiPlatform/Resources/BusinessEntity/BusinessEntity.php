@@ -70,10 +70,10 @@ class BusinessEntity
     public bool $deliveryAuthorized;
 
     /**
-     * BusinessEntityStatus enum name — one of PENDING, ENABLED, DISABLED.
+     * BusinessEntityStatus enum value — one of pending, active, inactive, rejected.
      */
     #[Assert\NotBlank(groups: ['Create'])]
-    #[Assert\Choice(choices: ['PENDING', 'ENABLED', 'DISABLED'])]
+    #[Assert\Choice(choices: ['pending', 'active', 'inactive', 'rejected'])]
     public string $status;
 
     #[Assert\NotNull(groups: ['Create'])]
