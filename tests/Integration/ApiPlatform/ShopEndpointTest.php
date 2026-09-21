@@ -23,6 +23,8 @@ declare(strict_types=1);
 
 namespace PsApiResourcesTest\Integration\ApiPlatform;
 
+use Symfony\Component\HttpFoundation\Response;
+
 class ShopEndpointTest extends ApiTestCase
 {
     public static function setUpBeforeClass(): void
@@ -39,23 +41,38 @@ class ShopEndpointTest extends ApiTestCase
         ];
     }
 
-    public function testSearchShops(): void
+    /**
+     * The endpoint returns two different row shapes and the distinction is the substance of the
+     * contract: a shop row carries the id/color/name of the shop plus the groupId/groupName/
+     * groupColor of the group it belongs to, while a shop-group row carries only id/color/name.
+     * The two searches below pin one payload of each shape whole, which covers the row types
+     * and the field set in one go.
+     */
+    public function testSearchShopsReturnsAShopRow(): void
     {
-        $results = $this->getItem('/shops/search?searchTerm=shop', ['shop_read']);
+        $this->assertEquals(
+            [[
+                'id' => 1,
+                'color' => '',
+                'name' => 'PrestaShop',
+                'groupId' => 1,
+                'groupName' => 'Default',
+                'groupColor' => '',
+            ]],
+            $this->getItem('/shops/search?searchTerm=shop', ['shop_read'])
+        );
+    }
 
-        $this->assertIsArray($results);
-        $this->assertNotEmpty($results);
-        // Pin the full row shape, not just the fields under test: a renamed, removed or
-        // unexpectedly added field would go through green otherwise. The result mixes shop-group
-        // rows (id/color/name only) and shop rows (which also expose the groupId/groupName/
-        // groupColor of the group they belong to).
-        $groupRowKeys = ['color', 'id', 'name'];
-        $shopRowKeys = ['color', 'groupColor', 'groupId', 'groupName', 'id', 'name'];
-        foreach ($results as $result) {
-            $actualKeys = array_keys($result);
-            sort($actualKeys);
-            $this->assertContains($actualKeys, [$groupRowKeys, $shopRowKeys]);
-        }
+    public function testSearchShopsReturnsAShopGroupRow(): void
+    {
+        $this->assertEquals(
+            [[
+                'id' => 1,
+                'color' => '',
+                'name' => 'Default',
+            ]],
+            $this->getItem('/shops/search?searchTerm=Default', ['shop_read'])
+        );
     }
 
     public function testSearchShopsWithNoResults(): void
@@ -64,5 +81,16 @@ class ShopEndpointTest extends ApiTestCase
 
         $this->assertIsArray($results);
         $this->assertEmpty($results);
+    }
+
+    /**
+     * required: true on the QueryParameter only guards the absent parameter; an empty value
+     * walks past it and SearchShops rejects it in its constructor. The exceptionToStatus on the
+     * resource maps that to 422, which is what an unmapped 500 used to surface as before.
+     */
+    public function testSearchShopsWithEmptySearchTermReturnsUnprocessable(): void
+    {
+        $this->getItem('/shops/search?searchTerm=', ['shop_read'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->getItem('/shops/search?searchTerm=%20', ['shop_read'], Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 }
