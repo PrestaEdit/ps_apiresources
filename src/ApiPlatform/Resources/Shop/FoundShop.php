@@ -26,8 +26,10 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Parameters;
 use ApiPlatform\Metadata\QueryParameter;
+use PrestaShop\PrestaShop\Core\Domain\Shop\Exception\SearchShopException;
 use PrestaShop\PrestaShop\Core\Domain\Shop\Query\SearchShops;
 use PrestaShopBundle\ApiPlatform\Metadata\CQRSGetCollection;
+use Symfony\Component\HttpFoundation\Response;
 
 #[ApiResource(
     operations: [
@@ -58,10 +60,20 @@ use PrestaShopBundle\ApiPlatform\Metadata\CQRSGetCollection;
             ],
         ),
     ],
+    // required: true only guards the absent parameter; an empty value walks past it and
+    // SearchShops rejects it in its constructor. Surface that as 422 rather than an unmapped 500.
+    exceptionToStatus: [
+        SearchShopException::class => Response::HTTP_UNPROCESSABLE_ENTITY,
+    ],
 )]
 class FoundShop
 {
-    #[ApiProperty(identifier: true)]
+    /**
+     * Not the resource identifier: this collection mixes shop rows and shop-group rows, so this
+     * value is a shop id on one row and a shop-group id on another. Declaring identifier: false
+     * also keeps API Platform from registering an unusable /found_shops/{id} item route.
+     */
+    #[ApiProperty(identifier: false)]
     public int $id;
 
     public string $color;
