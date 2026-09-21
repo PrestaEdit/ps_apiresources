@@ -44,11 +44,17 @@ class ShopEndpointTest extends ApiTestCase
         $results = $this->getItem('/shops/search?searchTerm=shop', ['shop_read']);
 
         $this->assertIsArray($results);
-        // The result mixes shop-group rows and shop rows; every row exposes id/color/name
+        $this->assertNotEmpty($results);
+        // Pin the full row shape, not just the fields under test: a renamed, removed or
+        // unexpectedly added field would go through green otherwise. The result mixes shop-group
+        // rows (id/color/name only) and shop rows (which also expose the groupId/groupName/
+        // groupColor of the group they belong to).
+        $groupRowKeys = ['color', 'id', 'name'];
+        $shopRowKeys = ['color', 'groupColor', 'groupId', 'groupName', 'id', 'name'];
         foreach ($results as $result) {
-            $this->assertArrayHasKey('id', $result);
-            $this->assertArrayHasKey('color', $result);
-            $this->assertArrayHasKey('name', $result);
+            $actualKeys = array_keys($result);
+            sort($actualKeys);
+            $this->assertContains($actualKeys, [$groupRowKeys, $shopRowKeys]);
         }
     }
 
