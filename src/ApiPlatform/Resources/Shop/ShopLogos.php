@@ -44,8 +44,8 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
  * side returns the paths the core stored them at — so the uploaded* properties are declared
  * readable: false and stay out of the responses.
  *
- * The upload answers an empty 204 rather than replaying GetLogosPaths: the result of an upload
- * is read back with the GET on the same URI.
+ * The upload replays the query of the GET and answers 200 with the resulting paths, so callers
+ * do not have to issue a second request to read them back.
  */
 #[ApiResource(
     operations: [
